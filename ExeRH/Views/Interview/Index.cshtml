@@ -1,0 +1,42 @@
+﻿@model IEnumerable<ExeRH.ViewModels.InterviewViewModel>
+
+<div class="container">
+    <h2>Entrevistas</h2>
+    <a asp-controller="Interview" asp-action="Create">Adicionar Novo</a>
+
+    <table class="table table-hover table-striped">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Date)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.JobPosition.DisplayName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.FullName)
+                </th>
+                <th><!-- buttons --></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.JobPosition.DisplayName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.User.FullName)
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Detalhes</a>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

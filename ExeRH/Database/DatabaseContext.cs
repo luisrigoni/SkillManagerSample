@@ -10,9 +10,10 @@ namespace ExeRH.Database
 {
     public class DatabaseContext : DbContext
     {
-        public DbSet<ApplicantUser> Users { get; internal set; }
         public DbSet<TechnologySkill> Skills { get; internal set; }
         public DbSet<JobPosition> JobPositions { get; internal set; }
+        public DbSet<ApplicantUser> Users { get; internal set; }
+        public DbSet<Interview> Interviews { get; internal set; }
 
         public DatabaseContext(DbContextOptions options) : base(options)
         {

@@ -2,6 +2,7 @@
 using ExeRH.Models;
 using ExeRH.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace ExeRH.Controllers
 {
-    public class JobController : Controller
+    public class InterviewController : Controller
     {
         private readonly DatabaseContext _database;
 
-        public JobController(DatabaseContext database)
+        public InterviewController(DatabaseContext database)
         {
             _database = database;
         }
@@ -21,18 +22,24 @@ namespace ExeRH.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var viewModels = _database.JobPositions
+            var viewModels = _database.Interviews
+                .Include(i => i.User)
+                .Include(i => i.JobPosition)
+                .OrderByDescending(i => i.Date)
                 .Select(s => ConvertToViewModel(s))
                 .ToList();
             return View(viewModels);
         }
 
-        public static JobPositionViewModel ConvertToViewModel(JobPosition entity)
+        private static InterviewViewModel ConvertToViewModel(Interview entity)
         {
-            return new JobPositionViewModel()
+            return new InterviewViewModel()
             {
                 Id = entity.Id,
-                DisplayName = entity.DisplayName,
+                Date = entity.Date,
+                User = UserController.ConvertToViewModel(entity.User),
+                JobPosition = JobController.ConvertToViewModel(entity.JobPosition)
+                //Skills
             };
         }
 
@@ -43,13 +50,13 @@ namespace ExeRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(JobPositionViewModel viewModel)
+        public IActionResult Create(InterviewViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                var entity = new JobPosition();
-                entity.DisplayName = viewModel.DisplayName;
-                _database.JobPositions.Add(entity);
+                var entity = new Interview();
+                //entity.DislayName = viewModel.DisplayName;
+                _database.Interviews.Add(entity);
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -64,7 +71,7 @@ namespace ExeRH.Controllers
                 return NotFound();
             }
 
-            var entity = _database.JobPositions.Find(id);
+            var entity = _database.Interviews.Find(id);
             if (entity == null)
             {
                 return NotFound();
@@ -74,7 +81,7 @@ namespace ExeRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, JobPositionViewModel viewModel)
+        public IActionResult Edit(int id, InterviewViewModel viewModel)
         {
             if (id != viewModel.Id)
             {
@@ -83,14 +90,31 @@ namespace ExeRH.Controllers
 
             if (ModelState.IsValid)
             {
-                var entity = _database.JobPositions.Find(id);
-                entity.DisplayName = viewModel.DisplayName;
+                var entity = _database.Interviews.Find(id);
+                //entity.DislayName = viewModel.DisplayName;
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
             return View(viewModel);
         }
 
+        public IActionResult Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var entity = _database.Interviews
+                .Include(i => i.User)
+                .Include(i => i.JobPosition)
+                .FirstOrDefault(i => i.Id.Equals(id));
+            if (entity == null)
+            {
+                return NotFound();
+            }
+            return View(ConvertToViewModel(entity));
+        }
 
         public IActionResult Delete(int? id)
         {
@@ -99,7 +123,7 @@ namespace ExeRH.Controllers
                 return NotFound();
             }
 
-            var entity = _database.JobPositions.Find(id);
+            var entity = _database.Interviews.Find(id);
             if (entity == null)
             {
                 return NotFound();
@@ -120,8 +144,8 @@ namespace ExeRH.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var entity = _database.JobPositions.Find(id);
-            _database.JobPositions.Remove(entity);
+            var entity = _database.Interviews.Find(id);
+            _database.Interviews.Remove(entity);
             _database.SaveChanges();
             return RedirectToAction("Index");
         }

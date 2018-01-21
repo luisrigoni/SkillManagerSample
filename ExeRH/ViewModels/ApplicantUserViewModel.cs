@@ -4,13 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ExeRH.Models
+namespace ExeRH.ViewModels
 {
-    public class ApplicantUser
+    public class ApplicantUserViewModel
     {
-        [Key]
         public int Id { get; internal set; }
         [Required]
+        [MinLength(10)]
+        [Display(Name = "Nome completo")]
         public string FullName { get; internal set; }
     }
 }

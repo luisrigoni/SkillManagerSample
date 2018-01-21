@@ -17,7 +17,32 @@ namespace ExeRH.Database
                 SeedSkills(context);
                 SeedUsers(context);
                 SeedJobPositions(context);
+                SeedInterviews(context);
             }
+        }
+
+        private static void SeedInterviews(DatabaseContext context)
+        {
+            if (context.Interviews.Any())
+            {
+                return; // DB has already been seeded
+            }
+
+            context.Interviews.AddRange(
+                new Interview
+                {
+                    Date = DateTime.Now.AddDays(-new Random().Next(1, 30)).AddSeconds(new Random().Next(1, 86400)),
+                    JobPosition = context.JobPositions.First(),
+                    User = context.Users.First(),
+                },
+                new Interview
+                {
+                    Date = DateTime.Now.AddDays(-new Random().Next(1, 30)).AddSeconds(new Random().Next(1, 86400)),
+                    JobPosition = context.JobPositions.Last(),
+                    User = context.Users.Last(),
+                }
+            );
+            context.SaveChanges();
         }
 
         private static void SeedJobPositions(DatabaseContext context)
@@ -35,6 +60,10 @@ namespace ExeRH.Database
                 new JobPosition
                 {
                     DisplayName = "Desenvolvedor Angular 2+",
+                },
+                new JobPosition
+                {
+                    DisplayName = "Scrum Master",
                 }
             );
             context.SaveChanges();
@@ -78,44 +107,37 @@ namespace ExeRH.Database
             context.Users.AddRange(
                  new ApplicantUser
                  {
-                     Name = "Norberto Maria",
-                     AvatarURL = "https://robohash.org/VVG.png?set=set1&size=150x150",
+                     FullName = "Norberto Maria",
                  },
 
                  new ApplicantUser
                  {
-                     Name = "Horácio Luiz",
-                     AvatarURL = "https://robohash.org/J47.png?set=set1&size=150x150",
+                     FullName = "Horácio Luiz",
                  },
 
                  new ApplicantUser
                  {
-                     Name = "Altair Fabricio",
-                     AvatarURL = "https://robohash.org/AF0.png?set=set1&size=150x150",
+                     FullName = "Altair Fabricio",
                  },
 
                  new ApplicantUser
                  {
-                     Name = "Jordão Josué",
-                     AvatarURL = "https://robohash.org/9GI.png?set=set2&size=150x150",
+                     FullName = "Jordão Josué",
                  },
 
                  new ApplicantUser
                  {
-                     Name = "Bernardo Maximiano",
-                     AvatarURL = "https://robohash.org/2XJ.png?set=set2&size=150x150",
+                     FullName = "Bernardo Maximiano",
                  },
 
                  new ApplicantUser
                  {
-                     Name = "Salomão Luisinho",
-                     AvatarURL = "https://robohash.org/ZHL.png?set=set3&size=150x150",
+                     FullName = "Salomão Luisinho",
                  },
 
                  new ApplicantUser
                  {
-                     Name = "Herberto Cezar",
-                     AvatarURL = "https://robohash.org/X6M.png?set=set3&size=150x150",
+                     FullName = "Herberto Cezar",
                  }
             );
             context.SaveChanges();

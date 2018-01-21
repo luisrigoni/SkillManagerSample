@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace ExeRH.Controllers
 {
-    public class JobController : Controller
+    public class UserController : Controller
     {
         private readonly DatabaseContext _database;
 
-        public JobController(DatabaseContext database)
+        public UserController(DatabaseContext database)
         {
             _database = database;
         }
@@ -21,18 +21,18 @@ namespace ExeRH.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var viewModels = _database.JobPositions
+            var viewModels = _database.Users
                 .Select(s => ConvertToViewModel(s))
                 .ToList();
             return View(viewModels);
         }
 
-        public static JobPositionViewModel ConvertToViewModel(JobPosition entity)
+        public static ApplicantUserViewModel ConvertToViewModel(ApplicantUser entity)
         {
-            return new JobPositionViewModel()
+            return new ApplicantUserViewModel()
             {
                 Id = entity.Id,
-                DisplayName = entity.DisplayName,
+                FullName = entity.FullName,
             };
         }
 
@@ -43,13 +43,13 @@ namespace ExeRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(JobPositionViewModel viewModel)
+        public IActionResult Create(ApplicantUserViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                var entity = new JobPosition();
-                entity.DisplayName = viewModel.DisplayName;
-                _database.JobPositions.Add(entity);
+                var entity = new ApplicantUser();
+                entity.FullName = viewModel.FullName;
+                _database.Users.Add(entity);
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -64,7 +64,7 @@ namespace ExeRH.Controllers
                 return NotFound();
             }
 
-            var entity = _database.JobPositions.Find(id);
+            var entity = _database.Users.Find(id);
             if (entity == null)
             {
                 return NotFound();
@@ -74,7 +74,7 @@ namespace ExeRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, JobPositionViewModel viewModel)
+        public IActionResult Edit(int id, ApplicantUserViewModel viewModel)
         {
             if (id != viewModel.Id)
             {
@@ -83,8 +83,8 @@ namespace ExeRH.Controllers
 
             if (ModelState.IsValid)
             {
-                var entity = _database.JobPositions.Find(id);
-                entity.DisplayName = viewModel.DisplayName;
+                var entity = _database.Users.Find(id);
+                entity.FullName = viewModel.FullName;
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -99,7 +99,7 @@ namespace ExeRH.Controllers
                 return NotFound();
             }
 
-            var entity = _database.JobPositions.Find(id);
+            var entity = _database.Users.Find(id);
             if (entity == null)
             {
                 return NotFound();
@@ -120,8 +120,8 @@ namespace ExeRH.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var entity = _database.JobPositions.Find(id);
-            _database.JobPositions.Remove(entity);
+            var entity = _database.Users.Find(id);
+            _database.Users.Remove(entity);
             _database.SaveChanges();
             return RedirectToAction("Index");
         }
