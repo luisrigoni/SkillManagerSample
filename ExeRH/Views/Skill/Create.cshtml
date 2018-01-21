@@ -1,0 +1,26 @@
+﻿@model ExeRH.ViewModels.TechnologySkillViewModel
+
+<div class="container">
+    <h2>Nova Tecnologia</h2>
+    <a asp-action="Index" class="btn btn-link">Voltar à lista</a>
+
+    <form asp-controller="TechnologySkill" asp-action="Create" method="post" class="form-horizontal" role="form">
+        <div class="form-horizontal">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="DisplayName" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="DisplayName" class="form-control" />
+                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" formaction="Create" value="Create" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

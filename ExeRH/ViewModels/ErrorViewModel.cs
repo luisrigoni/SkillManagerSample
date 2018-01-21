@@ -1,6 +1,6 @@
 using System;
 
-namespace ExeRH.Models
+namespace ExeRH.ViewModels
 {
     public class ErrorViewModel
     {

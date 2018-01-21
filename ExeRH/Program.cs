@@ -20,6 +20,7 @@ namespace ExeRH
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseDefaultServiceProvider(options =>options.ValidateScopes = false) // https://github.com/dotnet/corefx/issues/23604#issuecomment-325554218
                 .Build();
     }
 }
