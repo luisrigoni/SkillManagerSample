@@ -106,7 +106,7 @@ namespace ExeRH.Controllers
 
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditAsync(int? id, string[] selectedSkills)
+        public async Task<IActionResult> EditAsync(int? id, string displayName, string[] selectedSkills)
         {
             if (id == null)
             {
@@ -117,8 +117,9 @@ namespace ExeRH.Controllers
                 .Include(i => i.JobPositionSkillsAssignments).ThenInclude(i => i.Skill)
                 .SingleOrDefaultAsync(m => m.Id == id);
 
-            if (await TryUpdateModelAsync(entityToUpdate, "", i => i.DisplayName))
+            if (ModelState.IsValid)
             {
+                entityToUpdate.DisplayName = displayName;
                 UpdateJobPositionSkillsAssignments(selectedSkills, entityToUpdate);
                 await _database.SaveChangesAsync();
                 return RedirectToAction("Index");

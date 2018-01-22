@@ -8,10 +8,10 @@ namespace ExeRH.ViewModels
 {
     public class ApplicantUserViewModel
     {
-        public int Id { get; internal set; }
-        [Required]
-        [MinLength(10)]
+        public int Id { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         [Display(Name = "Nome completo")]
-        public string FullName { get; internal set; }
+        public string FullName { get; set; }
     }
 }

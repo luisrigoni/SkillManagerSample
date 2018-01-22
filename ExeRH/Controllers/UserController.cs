@@ -43,7 +43,7 @@ namespace ExeRH.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ApplicantUserViewModel viewModel)
+        public IActionResult Create([Bind("FullName")] ApplicantUserViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
