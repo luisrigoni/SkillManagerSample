@@ -48,17 +48,35 @@ namespace ExeRH.Controllers
         {
             PopulateUsersDropDownList();
             PopulateJobPositionsDropDownList();
+            var entity = new ApplicantUser();
+            PopulateAssignedSkillData(entity);
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Interview entity)
+        public IActionResult Create(Interview entity, string[] selectedSkills)
         {
+            var assigmentList = new List<UserSkillAssignment>();
+
+            if (selectedSkills != null)
+            {
+                foreach (var s in selectedSkills)
+                {
+                    var skillAssignmentToAdd = new UserSkillAssignment
+                    {
+                        UserId = entity.UserId,
+                        SkillId = int.Parse(s)
+                    };
+                    assigmentList.Add(skillAssignmentToAdd);
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 entity.Date = DateTime.Now;
                 _database.Interviews.Add(entity);
+                _database.UserSkillAssignments.AddRange(assigmentList);
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
@@ -77,15 +95,26 @@ namespace ExeRH.Controllers
             }
 
             var entity = _database.Interviews
-                .Include(i => i.User)
-                .Include(i => i.JobPosition)
-                .AsNoTracking()
-                .SingleOrDefault(i => i.Id == id);
+                .Include(i => i.User).ThenInclude(i => i.SkillAssignments)
+                .Include(i => i.JobPosition).ThenInclude(i => i.JobPositionSkillsAssignments)
+                .Where(i => i.Id == id)
+                .Select(i => new InterviewDetailsViewModel()
+                {
+                    Date = i.Date,
+                    JobPositionName = i.JobPosition.DisplayName,
+                    UserName = i.User.FullName,
+                    Skills = i.User.SkillAssignments
+                            .Select(j => new AssignedSkillData
+                            {
+                                SkillName = j.Skill.DislayName
+                            }).ToList()
+                })
+                .SingleOrDefault();
             if (entity == null)
             {
                 return NotFound();
             }
-            return View(ConvertToViewModel(entity));
+            return View(entity);
         }
 
         private void PopulateUsersDropDownList(object selectedValue = null)
@@ -112,6 +141,34 @@ namespace ExeRH.Controllers
                 nameof(JobPositionViewModel.Id),
                 nameof(JobPositionViewModel.DisplayName),
                 selectedValue);
+        }
+
+        private void PopulateAssignedSkillData(ApplicantUser user)
+        {
+            var jobSkills = new HashSet<int>();
+
+            var allSkills = _database.Skills;
+            if (user != null)
+            {
+                Parallel.ForEach(
+                   user.SkillAssignments.Select(js => js.SkillId),
+                   i => jobSkills.Add(i));
+            }
+
+            var viewModel = new List<AssignedSkillData>();
+            foreach (var s in allSkills)
+            {
+                viewModel.Add(new AssignedSkillData
+                {
+                    SkillId = s.Id,
+                    SkillName = s.DislayName,
+                    Assigned = jobSkills.Contains(s.Id),
+                });
+            }
+
+            ViewData["AssignedSkills"] = viewModel
+                .OrderByDescending(i => i.Assigned)
+                .ThenBy(i => i.SkillName);
         }
     }
 }

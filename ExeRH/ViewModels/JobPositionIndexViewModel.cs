@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using ExeRH.Models;
 
-namespace ExeRH.Models
+namespace ExeRH.ViewModels
 {
-    public class JobPosition
+    public class JobPositionIndexViewModel
     {
-        [Key]
         public int Id { get; internal set; }
 
-        [Required]
         [Display(Name = "Vaga")]
+
         public string DisplayName { get; internal set; }
 
         [Display(Name = "Tecnologias")]
-        public List<JobPositionSkillAssignment> JobPositionSkillsAssignments { get; set; } = new List<JobPositionSkillAssignment>();
+        public List<TechnologySkill> Skills { get; internal set; }
 
-        [Display(Name = "Entrevistas")]
-        public List<Interview> Interviews { get; set; } = new List<Interview>();
+        [Display(Name = "Candidaturas")]
+        public int Appliances { get; internal set; }
     }
 }

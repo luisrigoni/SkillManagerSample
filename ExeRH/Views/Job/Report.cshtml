@@ -1,32 +1,31 @@
-﻿@model ExeRH.ViewModels.JobPositionViewModel
+﻿@model IEnumerable<ExeRH.ViewModels.JobPositionReportViewModel>
 
-<h2>Editar</h2>
+<div class="container">
+    <h2>Relatório</h2>
 
-<form asp-action="Edit">
-    <div class="form-horizontal">
-        <h4>Tecnologia</h4>
-        <hr />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="Id" />
-        <div class="form-group">
-            <label asp-for="DisplayName" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="DisplayName" class="form-control" />
-                <span asp-validation-for="DisplayName" class="text-danger"></span>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Salvar" class="btn btn-default" />
-            </div>
-        </div>
-    </div>
-</form>
-
-<div>
-    <a asp-action="Index">Voltar à lista</a>
+    <table class="table table-hover table-striped">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.User.FullName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.TotalWeight)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.User.FullName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.TotalWeight)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

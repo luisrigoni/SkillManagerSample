@@ -29,6 +29,25 @@
             </div>
 
             <div class="form-group">
+                <label asp-for="User.SkillAssignments" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    @foreach (ExeRH.ViewModels.AssignedSkillData s in ViewBag.AssignedSkills)
+                    {
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   name="selectedSkills"
+                                   id="group_@s.SkillId"
+                                   value="@s.SkillId"
+                                   @(Html.Raw(s.Assigned ? "checked=\"checked\"" : ""))>
+                            <label class="form-check-label" for="group_@s.SkillId">
+                                @s.SkillName
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
                     <input type="submit" formaction="Create" value="Create" class="btn btn-primary" />
                 </div>

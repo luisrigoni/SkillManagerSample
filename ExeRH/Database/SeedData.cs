@@ -68,11 +68,12 @@ namespace ExeRH.Database
             context.JobPositions.AddRange(dotnet, angular, scrum);
             context.SaveChanges();
 
-            context.JobPositionsSkills.AddRange(
+            context.JobPositionSkillAssignments.AddRange(
                 new JobPositionSkillAssignment
                 {
                     JobPosition = dotnet,
                     Skill = context.Skills.First(),
+                    Weight = 10,
                 },
                 new JobPositionSkillAssignment
                 {
@@ -83,6 +84,7 @@ namespace ExeRH.Database
                 {
                     JobPosition = angular,
                     Skill = context.Skills.Last(),
+                    Weight = 2,
                 }
             );
             context.SaveChanges();
@@ -159,6 +161,21 @@ namespace ExeRH.Database
                      FullName = "Herberto Cezar",
                  }
             );
+            context.SaveChanges();
+
+            context.UserSkillAssignments.AddRange(
+                new UserSkillAssignment()
+                {
+                    User = context.Users.First(),
+                    Skill = context.Skills.First(),
+                },
+                new UserSkillAssignment()
+                {
+                    User = context.Users.Last(),
+                    Skill = context.Skills.Last(),
+                }
+            );
+
             context.SaveChanges();
         }
     }

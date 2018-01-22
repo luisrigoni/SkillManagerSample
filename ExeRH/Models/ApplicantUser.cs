@@ -10,7 +10,12 @@ namespace ExeRH.Models
     {
         [Key]
         public int Id { get; internal set; }
+
         [Required]
+        [Display(Name = "Nome")]
         public string FullName { get; internal set; }
+
+        [Display(Name = "Tecnologias")]
+        public List<UserSkillAssignment> SkillAssignments { get; set; } = new List<UserSkillAssignment>();
     }
 }

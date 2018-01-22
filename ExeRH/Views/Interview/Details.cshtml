@@ -1,7 +1,7 @@
-﻿@model ExeRH.ViewModels.InterviewViewModel
+﻿@model ExeRH.ViewModels.InterviewDetailsViewModel
 
 <div class="container">
-    <h2>@Model.User.FullName</h2>
+    <h2>@Model.UserName</h2>
     <a asp-action="Index" class="btn btn-link">Voltar à lista</a>
 
     <div>
@@ -13,20 +13,36 @@
                 @Html.DisplayFor(model => model.Date)
             </dd>
         </dl>
+
         <dl class="dl-horizontal">
             <dt>
-                @Html.DisplayNameFor(model => model.JobPosition.DisplayName)
+                @Html.DisplayNameFor(model => model.JobPositionName)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.JobPosition.DisplayName)
+                @Html.DisplayFor(model => model.JobPositionName)
             </dd>
         </dl>
+
         <dl class="dl-horizontal">
             <dt>
-                @Html.DisplayNameFor(model => model.User.FullName)
+                @Html.DisplayNameFor(model => model.UserName)
             </dt>
             <dd>
-                @Html.DisplayFor(model => model.User.FullName)
+                @Html.DisplayFor(model => model.UserName)
+            </dd>
+        </dl>
+
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Skills)
+            </dt>
+            <dd>
+                @foreach (var s in Model.Skills)
+                {
+                    <div>
+                        @s.SkillName
+                    </div>
+                }
             </dd>
         </dl>
     </div>

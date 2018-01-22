@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ExeRH.Models.JobPosition>
+﻿@model IEnumerable<ExeRH.ViewModels.JobPositionIndexViewModel>
 
 <div class="container">
     <h2>Vagas</h2>
@@ -14,7 +14,10 @@
                     @Html.DisplayNameFor(model => model.DisplayName)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.JobPositionSkillsAssignments)
+                    @Html.DisplayNameFor(model => model.Skills)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Appliances)
                 </th>
                 <th><!-- buttons --></th>
             </tr>
@@ -30,12 +33,16 @@
                         @Html.DisplayFor(modelItem => item.DisplayName)
                     </td>
                     <td>
-                        @string.Join(", ", item.JobPositionSkillsAssignments.Select(s => s.Skill.DislayName))
+                        @string.Join(", ", item.Skills.Select(s => s.DislayName))
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Appliances)
                     </td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
                         @Html.ActionLink("Deletar", "Delete", new { id = item.Id }, new { onclick = "return confirm('Do you really want to delete " + item.DisplayName + "?')" }) |
-                        <a asp-action="Report" asp-route-id="@item.Id">Relatório Triagem</a>
+                        <a asp-action="Rating" asp-route-id="@item.Id">Triagem</a> |
+                        <a asp-action="Report" asp-route-id="@item.Id">Relatório</a>
                     </td>
                 </tr>
             }

@@ -6,22 +6,20 @@ using System.Threading.Tasks;
 
 namespace ExeRH.Models
 {
-    public class JobPositionSkillAssignment
+    public class UserSkillAssignment
     {
         [Key]
         public int Id { get; set; }
 
-        public JobPosition JobPosition { get; set; }
+        public ApplicantUser User { get; set; }
 
         [Required]
-        public int JobPositionId { get; set; }
+        public int UserId { get; set; }
 
         public TechnologySkill Skill { get; set; }
 
         [Required]
         public int SkillId { get; set; }
-
-        public double? Weight { get; set; }
 
     }
 }

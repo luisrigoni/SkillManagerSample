@@ -24,8 +24,13 @@ namespace ExeRH.Controllers
         {
             var viewModels = _database.JobPositions
                 .Include(i => i.JobPositionSkillsAssignments).ThenInclude(js => js.Skill)
-                .AsNoTracking()
-                .ToList();
+                .Select(job => new JobPositionIndexViewModel
+                {
+                    Id = job.Id,
+                    DisplayName = job.DisplayName,
+                    Skills = job.JobPositionSkillsAssignments.Select(s => s.Skill).ToList(),
+                    Appliances = _database.Interviews.Count(i => i.JobPositionId == job.Id)
+                }).ToList();
             return View(viewModels);
         }
 
@@ -59,12 +64,12 @@ namespace ExeRH.Controllers
                 model.JobPositionSkillsAssignments = new List<JobPositionSkillAssignment>();
                 foreach (var s in selectedSkills)
                 {
-                    var courseToAdd = new JobPositionSkillAssignment
+                    var skillAssignmentToAdd = new JobPositionSkillAssignment
                     {
                         JobPositionId = model.Id,
                         SkillId = int.Parse(s)
                     };
-                    model.JobPositionSkillsAssignments.Add(courseToAdd);
+                    model.JobPositionSkillsAssignments.Add(skillAssignmentToAdd);
                 }
             }
 
@@ -203,12 +208,33 @@ namespace ExeRH.Controllers
                 return NotFound();
             }
 
-            var entity = _database.JobPositions.Find(id);
+            var entity = _database.JobPositions
+                .Include(i => i.JobPositionSkillsAssignments)
+                .Include(i => i.Interviews).ThenInclude(i => i.User).ThenInclude(i => i.SkillAssignments)
+                .SingleOrDefault(i => i.Id == id);
+
             if (entity == null)
             {
                 return NotFound();
             }
-            return View(ConvertToViewModel(entity));
+
+            var jobWeights = entity.JobPositionSkillsAssignments
+                .ToDictionary(i => i.SkillId, i => i.Weight.GetValueOrDefault(0));
+
+            var viewModel = entity.Interviews
+                .Select(i => new JobPositionReportViewModel()
+                {
+                    User = i.User,
+                    TotalWeight = CalculateSkillsWeight(i.User.SkillAssignments, jobWeights),
+                })
+                .OrderByDescending(i => i.TotalWeight);
+
+            return View(viewModel);
+        }
+
+        private double CalculateSkillsWeight(List<UserSkillAssignment> userSkills, Dictionary<int, double> jobWeights)
+        {
+            return userSkills.Sum(s => jobWeights.GetValueOrDefault(s.SkillId, 0));
         }
 
         private void PopulateAssignedSkillData(JobPosition jobPosition)
@@ -237,6 +263,71 @@ namespace ExeRH.Controllers
             ViewData["AssignedSkills"] = viewModel
                 .OrderByDescending(i => i.Assigned)
                 .ThenBy(i => i.SkillName);
+        }
+
+        [HttpGet]
+        public IActionResult Rating(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var entity = _database.JobPositions
+                .Include(i => i.JobPositionSkillsAssignments).ThenInclude(i => i.Skill)
+                .SingleOrDefault(i => i.Id == id);
+
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = entity.JobPositionSkillsAssignments
+                .Select(i => new JobPositionSkillAssignmentRatingViewModel()
+                {
+                    Id = i.Id,
+                    SkillName = i.Skill.DislayName,
+                    Weight = i.Weight,
+                });
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public IActionResult EditRating(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var entity = _database.JobPositionSkillAssignments.Find(id);
+
+            if (entity == null)
+            {
+                return NotFound();
+            }
+
+            return View(entity);
+        }
+
+        [HttpPost, ActionName("EditRating")]
+        public async Task<IActionResult> EditRatingPostAsync(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var entityToUpdate = await _database.JobPositionSkillAssignments
+                .SingleOrDefaultAsync(m => m.Id == id);
+
+            if (await TryUpdateModelAsync(entityToUpdate, "", i => i.Weight))
+            {
+                await _database.SaveChangesAsync();
+                return RedirectToAction("Rating", new { Id = entityToUpdate.JobPositionId });
+            }
+
+            return View(entityToUpdate);
         }
     }
 }
