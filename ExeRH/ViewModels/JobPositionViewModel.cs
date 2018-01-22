@@ -13,5 +13,8 @@ namespace ExeRH.ViewModels
         [MinLength(1)]
         [Display(Name = "Nome da vaga")]
         public string DisplayName { get; set; }
+
+        [Display(Name = "Tecnologias")]
+        public List<TechnologySkillViewModel> Skills { get; set; }
     }
 }

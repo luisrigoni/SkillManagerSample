@@ -2,6 +2,7 @@
 using ExeRH.Models;
 using ExeRH.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -45,57 +46,27 @@ namespace ExeRH.Controllers
 
         public IActionResult Create()
         {
+            PopulateUsersDropDownList();
+            PopulateJobPositionsDropDownList();
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(InterviewViewModel viewModel)
+        public IActionResult Create(Interview entity)
         {
             if (ModelState.IsValid)
             {
-                var entity = new Interview();
-                //entity.DislayName = viewModel.DisplayName;
+                entity.Date = DateTime.Now;
                 _database.Interviews.Add(entity);
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(viewModel);
-        }
 
-        [HttpGet]
-        public IActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var entity = _database.Interviews.Find(id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
-            return View(ConvertToViewModel(entity));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, InterviewViewModel viewModel)
-        {
-            if (id != viewModel.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                var entity = _database.Interviews.Find(id);
-                //entity.DislayName = viewModel.DisplayName;
-                _database.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(viewModel);
+            // Error
+            PopulateUsersDropDownList(entity.UserId);
+            PopulateJobPositionsDropDownList(entity.JobPositionId);
+            return View(entity);
         }
 
         public IActionResult Details(int? id)
@@ -108,7 +79,8 @@ namespace ExeRH.Controllers
             var entity = _database.Interviews
                 .Include(i => i.User)
                 .Include(i => i.JobPosition)
-                .FirstOrDefault(i => i.Id.Equals(id));
+                .AsNoTracking()
+                .SingleOrDefault(i => i.Id == id);
             if (entity == null)
             {
                 return NotFound();
@@ -116,38 +88,30 @@ namespace ExeRH.Controllers
             return View(ConvertToViewModel(entity));
         }
 
-        public IActionResult Delete(int? id)
+        private void PopulateUsersDropDownList(object selectedValue = null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var users = _database.Users
+                .OrderBy(u => u.FullName)
+                .Select(u => UserController.ConvertToViewModel(u));
 
-            var entity = _database.Interviews.Find(id);
-            if (entity == null)
-            {
-                return NotFound();
-            }
-
-            // TODO: Doesn’t delete the specified entity, it returns a view of the 
-            // entity where you can submit (HttpPost) the deletion. Performing 
-            // a delete operation in response to a GET request (or for that matter, 
-            // performing an edit operation, create operation, or any other operation 
-            // that changes data) opens up a security hole.
-            //return View(professional);
-
-            DeleteConfirmed(id.Value);
-            return RedirectToAction("Index");
+            ViewBag.AllUsers = new SelectList(
+                users.AsNoTracking(),
+                nameof(ApplicantUserViewModel.Id),
+                nameof(ApplicantUserViewModel.FullName),
+                selectedValue);
         }
 
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        private void PopulateJobPositionsDropDownList(object selectedValue = null)
         {
-            var entity = _database.Interviews.Find(id);
-            _database.Interviews.Remove(entity);
-            _database.SaveChanges();
-            return RedirectToAction("Index");
+            var jobs = _database.JobPositions
+                .OrderByDescending(u => u.Id)
+                .Select(u => JobController.ConvertToViewModel(u));
+
+            ViewBag.AllJobsPositions = new SelectList(
+                jobs.AsNoTracking(),
+                nameof(JobPositionViewModel.Id),
+                nameof(JobPositionViewModel.DisplayName),
+                selectedValue);
         }
     }
 }

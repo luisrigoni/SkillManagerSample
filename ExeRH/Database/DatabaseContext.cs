@@ -12,6 +12,7 @@ namespace ExeRH.Database
     {
         public DbSet<TechnologySkill> Skills { get; internal set; }
         public DbSet<JobPosition> JobPositions { get; internal set; }
+        public DbSet<JobPositionSkillAssignment> JobPositionsSkills { get; internal set; }
         public DbSet<ApplicantUser> Users { get; internal set; }
         public DbSet<Interview> Interviews { get; internal set; }
 

@@ -52,18 +52,37 @@ namespace ExeRH.Database
                 return; // DB has already been seeded
             }
 
-            context.JobPositions.AddRange(
-                new JobPosition
+            var dotnet = new JobPosition
+            {
+                DisplayName = "Desenvolvedor .NET",
+            };
+            var angular = new JobPosition
+            {
+                DisplayName = "Desenvolvedor Front-End",
+            };
+            var scrum = new JobPosition
+            {
+                DisplayName = "Scrum Master",
+            };
+
+            context.JobPositions.AddRange(dotnet, angular, scrum);
+            context.SaveChanges();
+
+            context.JobPositionsSkills.AddRange(
+                new JobPositionSkillAssignment
                 {
-                    DisplayName = "Desenvolvedor .NET",
+                    JobPosition = dotnet,
+                    Skill = context.Skills.First(),
                 },
-                new JobPosition
+                new JobPositionSkillAssignment
                 {
-                    DisplayName = "Desenvolvedor Angular 2+",
+                    JobPosition = dotnet,
+                    Skill = context.Skills.Last(),
                 },
-                new JobPosition
+                new JobPositionSkillAssignment
                 {
-                    DisplayName = "Scrum Master",
+                    JobPosition = angular,
+                    Skill = context.Skills.Last(),
                 }
             );
             context.SaveChanges();
@@ -79,7 +98,7 @@ namespace ExeRH.Database
             context.Skills.AddRange(
                 new TechnologySkill
                 {
-                    DislayName = "C# (CSharp)",
+                    DislayName = "C# (C-Sharp)",
                 },
                 new TechnologySkill
                 {

@@ -1,18 +1,30 @@
-﻿@model ExeRH.ViewModels.InterviewViewModel
+﻿@model ExeRH.Models.Interview
 
 <div class="container">
     <h2>Entrevista</h2>
     <a asp-action="Index" class="btn btn-link">Voltar à lista</a>
 
-    <form asp-controller="TechnologySkill" asp-action="Create" method="post" class="form-horizontal" role="form">
+    <form asp-controller="Interview" asp-action="Create" method="post" class="form-horizontal" role="form">
         <div class="form-horizontal">
             <div asp-validation-summary="All" class="text-danger"></div>
 
             <div class="form-group">
-                <label asp-for="DisplayName" class="col-md-2 control-label"></label>
+                <label asp-for="JobPositionId" class="col-md-2 control-label"></label>
                 <div class="col-md-10">
-                    <input asp-for="DisplayName" class="form-control" />
-                    <span asp-validation-for="DisplayName" class="text-danger"></span>
+                    <select asp-for="JobPositionId" class="form-control" asp-items="ViewBag.AllJobsPositions">
+                        <option value="">-- Selecione --</option>
+                    </select>
+                    <span asp-validation-for="JobPositionId" class="text-danger" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="UserId" class="col-md-2 control-label"></label>
+                <div class="col-md-10">
+                    <select asp-for="UserId" class="form-control" asp-items="ViewBag.AllUsers">
+                        <option value="">-- Selecione --</option>
+                    </select>
+                    <span asp-validation-for="UserId" class="text-danger" />
                 </div>
             </div>
 

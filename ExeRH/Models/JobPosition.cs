@@ -10,9 +10,12 @@ namespace ExeRH.Models
     {
         [Key]
         public int Id { get; internal set; }
-        [Required]
-        public string DisplayName { get; set; }
 
-        public List<TechnologySkill> RequiredSkills { get; internal set; }
+        [Required]
+        [Display(Name = "Vaga")]
+        public string DisplayName { get; internal set; }
+
+        [Display(Name = "Tecnologias")]
+        public List<JobPositionSkillAssignment> JobPositionSkillsAssignments { get; set; } = new List<JobPositionSkillAssignment>();
     }
 }

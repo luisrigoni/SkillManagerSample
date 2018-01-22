@@ -2,6 +2,7 @@
 using ExeRH.Models;
 using ExeRH.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,8 @@ namespace ExeRH.Controllers
         public IActionResult Index()
         {
             var viewModels = _database.JobPositions
-                .Select(s => ConvertToViewModel(s))
+                .Include(i => i.JobPositionSkillsAssignments).ThenInclude(js => js.Skill)
+                .AsNoTracking()
                 .ToList();
             return View(viewModels);
         }
@@ -33,27 +35,48 @@ namespace ExeRH.Controllers
             {
                 Id = entity.Id,
                 DisplayName = entity.DisplayName,
+                //Skills = entity.JobPositionSkills?.Select(js => SkillController.ConvertToViewModel()).ToList()
             };
         }
 
         public IActionResult Create()
         {
+            var entity = new JobPosition();
+            entity.JobPositionSkillsAssignments = new List<JobPositionSkillAssignment>();
+            PopulateAssignedSkillData(entity);
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(JobPositionViewModel viewModel)
+        public IActionResult Create(string displayName, string[] selectedSkills)
         {
+            JobPosition model = new JobPosition();
+            model.DisplayName = displayName;
+
+            if (selectedSkills != null)
+            {
+                model.JobPositionSkillsAssignments = new List<JobPositionSkillAssignment>();
+                foreach (var s in selectedSkills)
+                {
+                    var courseToAdd = new JobPositionSkillAssignment
+                    {
+                        JobPositionId = model.Id,
+                        SkillId = int.Parse(s)
+                    };
+                    model.JobPositionSkillsAssignments.Add(courseToAdd);
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                var entity = new JobPosition();
-                entity.DisplayName = viewModel.DisplayName;
-                _database.JobPositions.Add(entity);
+                _database.JobPositions.Add(model);
                 _database.SaveChanges();
                 return RedirectToAction("Index");
             }
-            return View(viewModel);
+
+            PopulateAssignedSkillData(model);
+            return View(model);
         }
 
         [HttpGet]
@@ -64,33 +87,79 @@ namespace ExeRH.Controllers
                 return NotFound();
             }
 
-            var entity = _database.JobPositions.Find(id);
+            var entity = _database.JobPositions
+                .Include(i => i.JobPositionSkillsAssignments)
+                .SingleOrDefault(m => m.Id == id);
             if (entity == null)
             {
                 return NotFound();
             }
-            return View(ConvertToViewModel(entity));
+
+            PopulateAssignedSkillData(entity);
+            return View(entity);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, JobPositionViewModel viewModel)
+        public async Task<IActionResult> EditAsync(int? id, string[] selectedSkills)
         {
-            if (id != viewModel.Id)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var entityToUpdate = await _database.JobPositions
+                .Include(i => i.JobPositionSkillsAssignments).ThenInclude(i => i.Skill)
+                .SingleOrDefaultAsync(m => m.Id == id);
+
+            if (await TryUpdateModelAsync(entityToUpdate, "", i => i.DisplayName))
             {
-                var entity = _database.JobPositions.Find(id);
-                entity.DisplayName = viewModel.DisplayName;
-                _database.SaveChanges();
+                UpdateJobPositionSkillsAssignments(selectedSkills, entityToUpdate);
+                await _database.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            return View(viewModel);
+
+            UpdateJobPositionSkillsAssignments(selectedSkills, entityToUpdate);
+            PopulateAssignedSkillData(entityToUpdate);
+            return View(entityToUpdate);
         }
 
+        private void UpdateJobPositionSkillsAssignments(string[] selectedSkills, JobPosition entityToUpdate)
+        {
+            if (selectedSkills == null)
+            {
+                entityToUpdate.JobPositionSkillsAssignments = new List<JobPositionSkillAssignment>();
+                return;
+            }
+
+            var selectedHS = new HashSet<string>(selectedSkills);
+            var currentSkills = new HashSet<int>
+                (entityToUpdate.JobPositionSkillsAssignments.Select(c => c.SkillId));
+            foreach (var s in _database.Skills)
+            {
+                if (selectedHS.Contains(s.Id.ToString()))
+                {
+                    if (!currentSkills.Contains(s.Id))
+                    {
+                        entityToUpdate.JobPositionSkillsAssignments
+                            .Add(new JobPositionSkillAssignment
+                            {
+                                JobPositionId = entityToUpdate.Id,
+                                SkillId = s.Id
+                            });
+                    }
+                }
+                else
+                {
+                    if (currentSkills.Contains(s.Id))
+                    {
+                        var entityToRemove = entityToUpdate.JobPositionSkillsAssignments
+                            .SingleOrDefault(i => i.SkillId == s.Id);
+                        _database.Remove(entityToRemove);
+                    }
+                }
+            }
+        }
 
         public IActionResult Delete(int? id)
         {
@@ -124,6 +193,50 @@ namespace ExeRH.Controllers
             _database.JobPositions.Remove(entity);
             _database.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public IActionResult Report(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var entity = _database.JobPositions.Find(id);
+            if (entity == null)
+            {
+                return NotFound();
+            }
+            return View(ConvertToViewModel(entity));
+        }
+
+        private void PopulateAssignedSkillData(JobPosition jobPosition)
+        {
+            var jobSkills = new HashSet<int>();
+
+            var allSkills = _database.Skills;
+            if (jobPosition != null)
+            {
+                Parallel.ForEach(
+                   jobPosition.JobPositionSkillsAssignments.Select(js => js.SkillId),
+                   i => jobSkills.Add(i));
+            }
+
+            var viewModel = new List<AssignedSkillData>();
+            foreach (var s in allSkills)
+            {
+                viewModel.Add(new AssignedSkillData
+                {
+                    SkillId = s.Id,
+                    SkillName = s.DislayName,
+                    Assigned = jobSkills.Contains(s.Id),
+                });
+            }
+
+            ViewData["AssignedSkills"] = viewModel
+                .OrderByDescending(i => i.Assigned)
+                .ThenBy(i => i.SkillName);
         }
     }
 }

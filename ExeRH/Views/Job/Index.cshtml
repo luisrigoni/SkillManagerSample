@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ExeRH.ViewModels.JobPositionViewModel>
+﻿@model IEnumerable<ExeRH.Models.JobPosition>
 
 <div class="container">
     <h2>Vagas</h2>
@@ -12,6 +12,9 @@
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.DisplayName)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.JobPositionSkillsAssignments)
                 </th>
                 <th><!-- buttons --></th>
             </tr>
@@ -27,8 +30,12 @@
                         @Html.DisplayFor(modelItem => item.DisplayName)
                     </td>
                     <td>
+                        @string.Join(", ", item.JobPositionSkillsAssignments.Select(s => s.Skill.DislayName))
+                    </td>
+                    <td>
                         <a asp-action="Edit" asp-route-id="@item.Id">Editar</a> |
-                        @Html.ActionLink("Deletar", "Delete", new { id = item.Id }, new { onclick = "return confirm('Do you really want to delete " + item.DisplayName + "?')" })
+                        @Html.ActionLink("Deletar", "Delete", new { id = item.Id }, new { onclick = "return confirm('Do you really want to delete " + item.DisplayName + "?')" }) |
+                        <a asp-action="Report" asp-route-id="@item.Id">Relatório Triagem</a>
                     </td>
                 </tr>
             }

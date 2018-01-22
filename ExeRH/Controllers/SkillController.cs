@@ -27,7 +27,7 @@ namespace ExeRH.Controllers
             return View(viewModels);
         }
 
-        private static TechnologySkillViewModel ConvertToViewModel(TechnologySkill entity)
+        public static TechnologySkillViewModel ConvertToViewModel(TechnologySkill entity)
         {
             return new TechnologySkillViewModel()
             {
